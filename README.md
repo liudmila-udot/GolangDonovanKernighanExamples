@@ -197,7 +197,7 @@ if err != nil {
 * maps
 * structs
 
-Array:
+### Array:
 
 Arrays are fixed-length sequences of items of the same type. Arrays in Go can be created using the following syntax:
 ```
@@ -218,7 +218,7 @@ This has a couple of important implications:
 
 As you might imagine, this can be very expensive, especially when you are working with arrays that have a large number of elements.
 
-Slice:
+### Slice:
 
 Slices, on the other hand, are much more flexible, powerful, and convenient than arrays.
 Unlike arrays, slices can be resized using the built-in append function. 
@@ -277,7 +277,7 @@ s := x[:] // a slice referencing the storage of x
 
 ## Type declarations
 
-A type declaration defines a bew named type that has the same underlying type as an existing type.
+A type declaration defines a new named type that has the same underlying type as an existing type.
 
 ```
 type name underlying-type
