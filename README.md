@@ -370,7 +370,7 @@ A non-constant value x can be converted to type T in any of these cases:
 * ignoring struct tags (see below), x's type and T are not type parameters but have identical [underlying](https://go.dev/ref/spec#Underlying_types) types.
 * ignoring struct tags (see below), x's type and T are pointer types that are not named types, and their pointer base types are not type parameters but have identical underlying types.
 * x's type and T are both integer or floating point types.
-* x's type and T are both complex types.
+* x's type and T are both [complex](https://golangdocs.com/complex-numbers-in-golang#:~:text=There%20are%20two%20complex%20types,The%20complex64%20and%20the%20complex128.) types.
 * x is an integer or a slice of bytes or runes and T is a string type.
 * x is a string and T is a slice of bytes or runes.
 * x is a slice, T is an array or a pointer to an array, and the slice and array types have identical element types.
