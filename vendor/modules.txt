@@ -1,0 +1,8 @@
+# golang.org/x/net v0.0.0-20210929193557-e81a3d93ecf6
+## explicit; go 1.17
+golang.org/x/net/html
+golang.org/x/net/html/atom
+# gopl.io v0.0.0-20211004154805-1ae3ec64947b
+## explicit; go 1.16
+gopl.io/ch2/popcount
+gopl.io/ch2/tempconv
