@@ -751,6 +751,15 @@ if w, ok := w.(*os.File); ok {
 }
 ```
 
+Example
+
+```
+pod, ok := object.(*corev1.Pod)
+if !ok {
+    return false, errors.New("cannot assert Pod resource type to *corev1.Pod")
+}
+```
+
 ### Error types Assertions
 
 ```
