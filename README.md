@@ -1,3 +1,5 @@
+Examples from the book: https://github.com/adonovan/gopl.io
+
 In Go, := is for declaration + assignment, whereas = is for assignment only.
 
 For example, var foo int = 10 is the same as foo := 10.
@@ -860,3 +862,21 @@ func (imp *Importer) transformAndCollect(object client.Object) (skip bool) {
 	return false
 }    
 ```
+
+## Concurrency
+
+### Goroutines
+
+A goroutine is a lightweight thread managed by the Go runtime.
+
+When program starts, it has a single goroutine, called the main goroutine.
+New goroutines are created by the go statement.
+
+A go statement causes the function to be called in a newly created goroutine.
+
+```
+f() // call f(); wait for it to return
+go f() // create a new goroutine that calls f(); don't wait
+```
+
+When main function returns, all goroutines are terminated and the program exits.
