@@ -966,7 +966,7 @@ The receipt of the value *happens before* the receiver calls the reawakening of 
 
 In concurrency, when we say *x happens before y*, it means that all x effects, such as updates to variables, are guaranteed to be observed by y.
 
-### Pipelines
+#### Pipelines
 Channels can be used to connect goroutines together so that the output of one is the input of another.
 It is called *pipelines*.
 
@@ -1046,7 +1046,7 @@ func main() {
 }
 ```
 
-### Unidirectional Channel Types
+#### Unidirectional Channel Types
 
 We can break up previous example into smaller pieces. We'll define 3 functions instead of 3 go routines local variables.
 
