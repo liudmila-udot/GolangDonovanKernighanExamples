@@ -957,6 +957,7 @@ Unbuffered channels are synchronous.
 **Blocking Nature:**
 Sending on an unbuffered channel blocks the sender until another goroutine receives the data.
 Receiving from an unbuffered channel blocks the receiver until another goroutine sends data.
+
 **No Buffer:**
 Data is directly passed from the sender to the receiver without being stored.
 
@@ -965,6 +966,7 @@ The receipt of the value *happens before* the receiver calls the reawakening of 
 
 In concurrency, when we say *x happens before y*, it means that all x effects, such as updates to variables, are guaranteed to be observed by y.
 
+### Pipelines
 Channels can be used to connect goroutines together so that the output of one is the input of another.
 It is called *pipelines*.
 
@@ -1041,5 +1043,50 @@ func main() {
 	for x := range squares {
 		fmt.Println(x)
 	}
+}
+```
+
+### Unidirectional Channel Types
+
+We can break up previous example into smaller pieces. We'll define 3 functions instead of 3 go routines local variables.
+
+```
+func counter(out chan<- int)
+func squarer(out chan<- int, in <-chan int)
+func printer(in <-chan int)
+```
+
+
+Go provides unidirectional channel types that restrict the direction of data flow.
+Violations are detected at compile time.
+
+```
+func counter(out chan<- int) {
+	for x := 0; x < 100; x++ {
+		out <- x
+	}
+	close(out)
+}
+
+func squarer(out chan<- int, in <-chan int) {
+	for v := range in {
+		out <- v * v
+	}
+	close(out)
+}
+
+func printer(in <-chan int) {
+	for v := range in {
+		fmt.Println(v)
+	}
+}
+
+func main() {
+	naturals := make(chan int)
+	squares := make(chan int)
+
+	go counter(naturals)
+	go squarer(squares, naturals)
+	printer(squares)
 }
 ```
