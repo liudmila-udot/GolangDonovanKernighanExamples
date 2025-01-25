@@ -1,5 +1,49 @@
 Examples from the book: https://github.com/adonovan/gopl.io
 
+
+## Table of Contents
+- [Intro](#intro)
+- [Program structure](#program-structure)
+    - [Names](#names)
+    - [Declarations](#declarations)
+    - [Variables](#variables)
+        - [Short Variable Declarations](#short-variable-declaration)
+        - [Pointers](#pointers)
+        - [The new Function](#the-new-function)
+        - [Tuple Assignments](#tuple-assignments)
+    - [Composite Types](#composite-types)
+        - [Array](#array)
+        - [Slice](#slice)
+- [Type declarations](#type-declarations)
+- [Type Conversions](#type-conversions)
+  - [Implicit type conversions](#implicit-type-conversions)
+- [Errors](#errors)
+  - [Error Handling Strategies](#error-handling-strategies)
+  - [Propagate Error](#propagate-error)
+  - [Retry](#retry)
+  - [Print error and stop the program](#print-error-and-stop-the-program)
+  - [Log the error and then continue](#log-the-error-and-then-continue)
+  - [Ignore the error](#ignore-the-error)
+- [Deferred functions](#deferred-functions)
+- [Panic](#panic)
+- [Methods](#methods)
+- [Interfaces](#interfaces)
+  - [Interface types](#interface-types)
+  - [Assignability](#assignability)
+  - [Empty interface](#empty-interface)
+  - [Comparison: interfaces equality](#comparison-interfaces-equality)
+  - [Type Assertions](#type-assertions)
+  - [Error types Assertions](#error-types-assertions)
+  - [Type switches](#type-switches)
+- [Concurrency](#concurrency)
+  - [Goroutines](#goroutines)
+  - [Channels](#channels)
+    - [Unbuffered Channels](#unbuffered-channels)
+      - [Pipelines](#pipelines)
+      - [Unidirectional Channel Types](#unidirectional-channel-types)
+
+## Intro
+
 In Go, := is for declaration + assignment, whereas = is for assignment only.
 
 For example, var foo int = 10 is the same as foo := 10.
@@ -241,7 +285,7 @@ This has a couple of important implications:
 
 As you might imagine, this can be very expensive, especially when you are working with arrays that have a large number of elements.
 
-### Slice:
+### Slice
 
 Slices, on the other hand, are much more flexible, powerful, and convenient than arrays.
 Unlike arrays, slices can be resized using the built-in append function. 
@@ -674,7 +718,7 @@ type any = interface{}
 
 We need a way to get value back out again. We'll see how to do that using type assertion.
 
-# Comparison: interfaces equality
+### Comparison: interfaces equality
 
 Interface value has two components: dynamic type and a value of that type.
 
