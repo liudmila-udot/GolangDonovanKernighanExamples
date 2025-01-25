@@ -961,6 +961,8 @@ Receiving from an unbuffered channel blocks the receiver until another goroutine
 **No Buffer:**
 Data is directly passed from the sender to the receiver without being stored.
 
+Only one value at a time can be in transit through the unbuffered channel.
+
 When a value is sent on an unbuffered channel, the sender blocks until another goroutine receives the value.
 The receipt of the value *happens before* the receiver calls the reawakening of the sender.
 
