@@ -880,3 +880,35 @@ go f() // create a new goroutine that calls f(); don't wait
 ```
 
 When main function returns, all goroutines are terminated and the program exits.
+
+Example:
+```
+func printNumbers(prefix string) {
+	for i := 1; i <= 3; i++ {
+		fmt.Printf("%s: %d\n", prefix, i)
+		time.Sleep(500 * time.Millisecond) // Simulate work
+	}
+}
+
+func main() {
+	// Start a goroutine
+	go printNumbers("Goroutine")
+
+	// Main function continues running in parallel
+	printNumbers("Main")
+
+	fmt.Println("Done!")
+}
+```
+
+Output:
+
+```
+Main: 1
+Goroutine: 1
+Main: 2
+Goroutine: 2
+Main: 3
+Goroutine: 3
+Done!
+```
