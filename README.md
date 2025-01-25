@@ -676,6 +676,48 @@ We need a way to get value back out again. We'll see how to do that using type a
 
 Interface value has two components: dynamic type and a value of that type.
 
+Dynamic Type: The specific type of the value that the interface is currently holding.
+Dynamic Value: The actual value that matches the dynamic type.
+
+**Dynamic Type**
+The dynamic type is the actual type of the value stored in the interface at runtime.
+When you assign a value to an interface, Go records the type of the value along with the value itself.
+Example:
+```
+var i interface{}
+i = 42 // Assign an integer
+
+fmt.Printf("Dynamic Type: %T\n", i) // Output: Dynamic Type: int
+Here, the dynamic type of i is int because an integer value (42) was assigned to it.
+```
+
+**Dynamic Value**
+The dynamic value is the actual value stored inside the interface.
+This value must match the interface's dynamic type.
+Example:
+```
+var i interface{}
+i = 42 // Assign an integer
+
+fmt.Printf("Dynamic Value: %v\n", i) // Output: Dynamic Value: 42
+Here, the dynamic value is 42.
+```
+
+```
+func main() {
+    var i interface{} // Declare an empty interface
+
+    i = 42 // Assign an integer
+    fmt.Printf("Type: %T, Value: %v\n", i, i) // Output: Type: int, Value: 42
+
+    i = "hello" // Assign a string
+    fmt.Printf("Type: %T, Value: %v\n", i, i) // Output: Type: string, Value: hello
+
+    i = 3.14 // Assign a float
+    fmt.Printf("Type: %T, Value: %v\n", i, i) // Output: Type: float64, Value: 3.14
+}
+```
+
 Two interface values are equal if both are nil, or if their dynamic types are identical and their dynamic values are equal according
 to the usual behaviour of == for that type.
 
