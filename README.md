@@ -102,7 +102,7 @@ which could be way longer than just the address.
 p = &x - address of x
 *p - value of pointer p to x
 
-*int - means pointer to int
+var ptr *int - means pointer to int
 
 Example: Below is a pointer of type string which can store only the memory addresses of string variables.
 
@@ -130,6 +130,27 @@ fmp.Println(incr(&v))   // "3" (and v is 3 now)
 fmp.Println(incr(&v))   // "3" (and v is 3 now)
 ```
 
+```
+func main() {
+    // Declare an int variable
+    value := 42
+
+    // Declare a pointer to int
+    var ptr *int
+
+    // Assign the address of value to ptr
+    ptr = &value
+
+    // Print the value and the pointer
+    fmt.Println("Value:", value)        // Output: Value: 42
+    fmt.Println("Pointer:", ptr)        // Output: Pointer: 0xc0000120a0 (example address)
+    fmt.Println("Dereferenced:", *ptr) // Output: Dereferenced: 42
+
+    // Modify the value using the pointer
+    *ptr = 100
+    fmt.Println("Modified Value:", value) // Output: Modified Value: 100
+}
+```
 #### The new Function
 
 ```
