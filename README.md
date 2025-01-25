@@ -912,3 +912,134 @@ Main: 3
 Goroutine: 3
 Done!
 ```
+
+### Channels
+
+If goroutines are the threads of Go, **channels** are the connections between them.
+A channel is a typed conduit through which you can send and receive values with the channel operator, <-.
+
+To create a channel, use the make function:
+
+```
+ch := make(chan int)
+```
+
+Channel is a reference type, like a map or a slice. When we pass a channel to a function, 
+we are passing a reference to the channel.
+
+Channel has two principal operations: send and receive. Both operations are written using the <- operator.
+
+```
+ch <- v // Send v to channel ch.
+x = <-ch // Receive from ch, and assign value to x.
+<-ch // Receive from ch, and discard the received value.
+```
+
+Channels support a third operation: close, which sets a flag indicating that no more values will be sent on this channel.
+Subsequent attempts to send will panic.
+Receive operations on a closed channel yield the values that have been sent until no more values are left,
+after which any receive will yield the zero value of the channel's element type.
+
+To close a channel, use the close function:
+```
+close(ch)
+```
+
+Channel unbuffered by default. If pass non zero capacity to make, it will be buffered.
+
+```
+ch:=make(chan int) // unbuffered channel
+ch := make(chan int, 100) // buffered channel with capacity 100
+```
+### Unbuffered Channels
+Unbuffered channels are synchronous. 
+
+**Blocking Nature:**
+Sending on an unbuffered channel blocks the sender until another goroutine receives the data.
+Receiving from an unbuffered channel blocks the receiver until another goroutine sends data.
+**No Buffer:**
+Data is directly passed from the sender to the receiver without being stored.
+
+When a value is sent on an unbuffered channel, the sender blocks until another goroutine receives the value.
+The receipt of the value *happens before* the receiver calls the reawakening of the sender.
+
+In concurrency, when we say *x happens before y*, it means that all x effects, such as updates to variables, are guaranteed to be observed by y.
+
+Channels can be used to connect goroutines together so that the output of one is the input of another.
+It is called *pipelines*.
+
+```
+func main() {
+	naturals := make(chan int)
+	squares := make(chan int)
+
+	// Counter
+	go func() {
+		for x := 0; ; x++ {
+			naturals <- x
+		}
+	}()
+
+	// Squarer
+	go func() {
+		for {
+			x := <-naturals
+			squares <- x * x
+		}
+	}()
+
+	// Printer (in main goroutine)
+	for {
+		fmt.Println(<-squares)
+	}
+}
+```
+
+There is no way to test directly whether a channel has been closed,
+but there is a variant of the receive operation that produces two results: 
+the received value, and a boolean value that reports whether the channel is open or closed.
+
+```
+//Squarer
+go func() {
+    for {
+        x, ok := <-naturals
+        if !ok {
+            break // channel was closed and drained
+        }
+        squares <- x * x
+    }
+    close(squares)
+}()
+```
+
+Syntax above is clumsy, so Go provides a *range clause* for channels.
+This is more convenient syntax to receive values from a channel and terminating the loop after the last one.
+
+```
+func main() {
+	naturals := make(chan int)
+	squares := make(chan int)
+
+	// Counter
+	go func() {
+		for x := 0; x < 100; x++ {
+			naturals <- x
+		}
+		close(naturals)
+	}()
+
+	// Squarer
+	go func() {
+		for x := range naturals {
+			squares <- x * x
+		}
+		close(squares)
+	}()
+
+	// Printer (in main goroutine)
+	for x := range squares {
+		fmt.Println(x)
+	}
+}
+```
