@@ -41,6 +41,9 @@ Examples from the book: https://github.com/adonovan/gopl.io
     - [Unbuffered Channels](#unbuffered-channels)
       - [Pipelines](#pipelines)
       - [Unidirectional Channel Types](#unidirectional-channel-types)
+    - [Buffered Channels](#buffered-channels)
+    - [WaitGroup](#waitgroup)
+    - [Closing a channel](#closing-a-channel)
 
 ## Intro
 
@@ -995,7 +998,7 @@ Channel unbuffered by default. If pass non zero capacity to make, it will be buf
 ch:=make(chan int) // unbuffered channel
 ch := make(chan int, 100) // buffered channel with capacity 100
 ```
-### Unbuffered Channels
+#### Unbuffered Channels
 Unbuffered channels are synchronous. 
 
 **Blocking Nature:**
@@ -1012,7 +1015,7 @@ The receipt of the value *happens before* the receiver calls the reawakening of 
 
 In concurrency, when we say *x happens before y*, it means that all x effects, such as updates to variables, are guaranteed to be observed by y.
 
-#### Pipelines
+##### Pipelines
 Channels can be used to connect goroutines together so that the output of one is the input of another.
 It is called *pipelines*.
 
@@ -1092,7 +1095,7 @@ func main() {
 }
 ```
 
-#### Unidirectional Channel Types
+##### Unidirectional Channel Types
 
 We can break up previous example into smaller pieces. We'll define 3 functions instead of 3 go routines local variables.
 
@@ -1134,5 +1137,133 @@ func main() {
 	go counter(naturals)
 	go squarer(squares, naturals)
 	printer(squares)
+}
+```
+
+#### Buffered channels
+
+Buffered channel has a queue of elements. Sender can send elements to the channel without blocking until the queue is full.
+The queue's maximum size is determined when the channel is created.
+
+```
+ch := make(chan int, 100)
+```
+
+A send operation on a buffered channel inserts an element at the back of the queue. Receives remove elements from the front of the queue.
+If the channel is full, the send operation blocks until space is available.
+If the channel is empty, the receive operation blocks until a value is sent.
+
+```
+func mirroredQuery() string {
+responses := make(chan string, 3)
+go func() { responses <- request("asia.gopl.io") }()
+go func() { responses <- request("europe.gopl.io") }()
+go func() { responses <- request("americas.gopl.io") }()
+}
+
+func request(hostname string) (response string) {
+    return
+}
+```
+
+Request function returns the quickest response. If it was unbuffered channel, the two slower goroutines would have gotten stuck.
+Waiting to send their responses on a channel from which no one is receiving.
+
+This situation is called a **goroutine leak**. Unlike garbage variables, leaked goroutines are not automatically garbage-collected.
+So it is important to ensure that every goroutine terminates itself when no longer needed.
+
+
+The choice between **buffered** and **unbuffered** channels depends on how you want to coordinate communication and execution between goroutines.
+Unbuffered channels give stronger synchronization guarantees, because every send operation is synchronized with a corresponding receive.
+Buffered channels decouple the sender and receiver, allowing them to operate at different speeds.
+
+#### WaitGroup
+
+```
+// NOTE: incorrect
+func makeThumbnails2(filenames string[]) {
+    for _, f := range filenames {
+        go thumbnail.ImageFile(f) //NOTE: ignoring errors
+    }
+}
+```
+
+It starts goroutines, but doesn't wait for them to finish. The main goroutine may exit before the thumbnails are generated.
+
+A **WaitGroup** in Go is a synchronization mechanism provided by the sync package that is used to wait for a collection of goroutines to finish executing. 
+It's useful when you spawn multiple goroutines and want the main program (or another goroutine) to wait until all of them are done.
+
+Methods:
+**Add**: Increment the counter by the number of goroutines to wait for using Add(int).
+**Done**: Decrement the counter by one when a goroutine completes using Done().
+**Wait**: Blocks the calling goroutine until the counter becomes zero.
+
+Important:
+1. wg.Add() Must Be Called Before Goroutines Start:
+Ensure you call Add() before launching goroutines to avoid a race condition.
+2. Defer wg.Done():
+Using defer wg.Done() ensures that Done() is always called, even if the goroutine encounters an error or early return.
+
+```
+// makeThumbnails6 makes thumbnails for each file received from the channel.
+// It returns the number of bytes occupied by the files it creates.
+func makeThumbnails6(filenames <-chan string) int64 {
+    sizes := make(chan int64)
+    var wg sync.WaitGroup // number of working goroutines
+    for f := range filenames {
+        wg.Add(1)
+        // worker
+        go func(f string) {
+            defer wg.Done()
+            thumb, err := thumbnail.ImageFile(f)
+            if err != nil {
+                log.Println(err)
+                return
+            }
+            info, _ := os.Stat(thumb) // OK to ignore error
+            fmt.Println(info.Size())
+            sizes <- info.Size()
+        }(f)
+    }
+
+    // closer
+    go func() {
+        wg.Wait()
+        close(sizes)
+    }()
+
+    var total int64
+    for size := range sizes {
+        total += size
+    }
+    return total
+}
+```
+
+#### Closing a channel
+
+
+You can close both **buffered** and **unbuffered** channels.
+
+Close a channel when the sender is done sending values and there’s no need to send further data.
+Closing signals to the receivers that they should stop reading because no more values will come.
+
+If a channel is left open but no more data is sent, a for-range loop over it will block indefinitely unless handled properly.
+
+```
+func main() {
+    ch := make(chan int, 3)
+
+    go func() {
+        for i := 1; i <= 3; i++ {
+            ch <- i
+        }
+        close(ch) // Close the channel after sending all values
+    }()
+
+    for val := range ch {
+        fmt.Println(val)
+    }
+    fmt.Println("Channel closed")
 }
 ```
