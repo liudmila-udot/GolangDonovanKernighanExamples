@@ -44,6 +44,8 @@ Examples from the book: https://github.com/adonovan/gopl.io
     - [Buffered Channels](#buffered-channels)
     - [WaitGroup](#waitgroup)
     - [Closing a channel](#closing-a-channel)
+    - [Counting semaphore using buffered channel (reduce parallelism)](#counting-semaphore-using-buffered-channel-reduce-parallelism)
+    - [Multiplexing with select](#multiplexing-with-select)
 
 ## Intro
 
@@ -1265,5 +1267,88 @@ func main() {
         fmt.Println(val)
     }
     fmt.Println("Channel closed")
+}
+```
+#### Counting semaphore using buffered channel (reduce parallelism)
+
+Each of the n (20) vacant slots in the channel buffer represents a token that allows a single goroutine to proceed.
+
+Since the channel element type is not important, we'll use struct{}.
+
+struct{} represents an empty struct. It is a struct type that has no fields and takes up zero bytes of memory.
+
+```
+// tokens is a counting semaphore used to
+// enforce a limit of 20 concurrent requests.
+var tokens = make(chan struct{}, 20)
+
+func crawl(url string) []string {
+	fmt.Println(url)
+	tokens <- struct{}{} // acquire a token
+	list, err := links.Extract(url)
+	<-tokens // release the token
+
+	if err != nil {
+		log.Print(err)
+	}
+	return list
+}
+
+func main() {
+    go func(link string) {
+        worklist <- crawl(link)
+    }(link)
+}
+```
+
+#### Multiplexing with select
+
+The **select statement** in Go is used to wait on multiple channel operations (both send and receive).
+It allows to handle communication from multiple channels simultaneously
+
+**Works only with channels**: select is designed specifically for working with channel operations like sending (chan <- value) or receiving (value := <-chan).
+**Waits for a case to proceed**: select blocks until one of the channel operations is ready to proceed.
+**Default case for non-blocking**: A default case ensures the select does not block if none of the channels are ready.
+
+A select waits until a case is ready to proceed, then executes that case. If multiple cases are ready, one is chosen at random.
+A select with no cases, select{}, waits forever.
+
+```
+select {
+    case <-ch1:
+        // handle case 1
+    case x := <-ch2:
+        // handle case 2
+    case ch3 <- y:
+        // handle case 3
+    default:
+        // handle default case
+}
+```
+
+Example
+```
+func main() {
+	abort := make(chan struct{})
+	go func() {
+		os.Stdin.Read(make([]byte, 1)) // read a single byte
+		abort <- struct{}{}
+	}()
+
+	fmt.Println("Commencing countdown.  Press return to abort.")
+	// Create channel that will send the current time on the channel after each tick. 
+	// The period of the ticks is specified by the duration argument. 
+	tick := time.Tick(1 * time.Second)
+	for countdown := 10; countdown > 0; countdown-- {
+		fmt.Println(countdown)
+		select {
+		case <-tick:
+			// Do nothing.
+		case <-abort:
+			fmt.Println("Launch aborted!")
+			return
+		}
+	}
+	launch()
 }
 ```
