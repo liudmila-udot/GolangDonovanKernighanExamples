@@ -1157,14 +1157,14 @@ If the channel is empty, the receive operation blocks until a value is sent.
 
 ```
 func mirroredQuery() string {
-responses := make(chan string, 3)
-go func() { responses <- request("asia.gopl.io") }()
-go func() { responses <- request("europe.gopl.io") }()
-go func() { responses <- request("americas.gopl.io") }()
+    responses := make(chan string, 3)
+    go func() { responses <- request("asia.gopl.io") }()
+    go func() { responses <- request("europe.gopl.io") }()
+    go func() { responses <- request("americas.gopl.io") }()
 }
 
 func request(hostname string) (response string) {
-    return
+    /***/
 }
 ```
 
@@ -1350,5 +1350,26 @@ func main() {
 		}
 	}
 	launch()
+}
+```
+
+Example of labeled infinite for loop, allowing to break from select case.
+for without a condition creates an infinite loop.
+
+```
+loop:
+	for {
+		select {
+		case size, ok := <-fileSizes:
+			if !ok {
+				break loop // fileSizes was closed
+			}
+			nfiles++
+			nbytes += size
+		case <-tick:
+			printDiskUsage(nfiles, nbytes)
+		}
+	}
+	printDiskUsage(nfiles, nbytes) // final totals
 }
 ```
