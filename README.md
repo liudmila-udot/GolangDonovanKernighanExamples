@@ -1373,3 +1373,48 @@ loop:
 	printDiskUsage(nfiles, nbytes) // final totals
 }
 ```
+
+```
+for {
+		// Check how many Pods are still unassigned.
+		pods, err := ListUnassignedPods(ctx, s.podClient)
+		if err != nil {
+			return nil, errors.Wrap(err, "can't list unassigned Pods")
+		}
+		newCount := len(pods)
+
+		// If all Pods are assigned, we're done.
+		if newCount == 0 {
+			s.logger.Info(ctx, "scheduler has assigned all Pods")
+			s.updateScheduledPods(pods)
+			return nil, nil
+		}
+		// Check if we can prove that no more progress is possible,
+		// in which case we can quit immediately without waiting.
+		if progressImpossible(pods, nodeNamesLastExpansion) {
+			s.logger.Info(ctx, "scheduler cannot assign any more Pods to the latest batch of Nodes added",
+				zap.Int("unassignedPods", newCount),
+				zap.Strings("nodeNamesLastExpansion", nodeNamesLastExpansion))
+			return pods, nil
+		}
+		// Has the scheduler at least made progress since last time?
+		if lastProgress.IsZero() || newCount < minCount {
+			s.logger.Info(ctx, "waiting for scheduler to assign Pods", zap.Int("unassignedPods", newCount))
+			minCount = newCount
+			lastProgress = s.clock.Now()
+			s.updateScheduledPods(pods)
+		} else if s.clock.Since(lastProgress) >= schedulerProgressTimeout {
+			// We haven't seen any progress in a while, so we assume the scheduler has done
+			// as much as it can.
+			s.logger.Info(ctx, "scheduler has stopped making progress", zap.Int("unassignedPods", newCount))
+			return pods, nil
+		}
+
+		// Wait a bit before checking again.
+		select {
+		case <-ctx.Done():
+			return nil, ctx.Err()
+		case <-s.clock.After(schedulerPollInterval):
+			continue
+		}
+```
